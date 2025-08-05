@@ -61,26 +61,36 @@ import groovy.json.JsonSlurper
 tasks.register("fetchAssets") {
     doLast {
         def manifest = new JsonSlurper().parse(file("$rootDir/asset-manifest.json"))
+
         manifest.bundles.each { b ->
             println "→ Downloading ${b.name} bundle…"
 
-            def tmpDir = file("$buildDir/tmp")
+            /* ---------- download ---------- */
+            def tmpDir  = file("$buildDir/tmp")
             tmpDir.mkdirs()
 
             def zipFile = new File(tmpDir, "${b.name}.zip")
             ant.get(src: b.url, dest: zipFile, verbose: true)
 
-            ant.checksum(file: zipFile, algorithm: "sha-256", property: "downloadHash")
-            def actualHash = ant.project.properties['downloadHash']
+            /* ---------- verify checksum ---------- */
+            def propName = "hash_${b.name}"                          // unique per bundle
+            ant.checksum(file: zipFile,
+                         algorithm: "sha-256",
+                         property: propName,
+                         overwrite: true)                            // allow reset
+            def actualHash = ant.project.properties[propName]
+
             if (actualHash != b.sha256) {
-                throw new GradleException("Checksum mismatch for ${b.name}! expected=${b.sha256} got=${actualHash}")
+                throw new GradleException(
+                    "Checksum mismatch for ${b.name}! expected=${b.sha256} got=${actualHash}"
+                )
             }
 
-            // NEW: pick destination safely
+            /* ---------- unpack ---------- */
             def destDir = (b.name == "plugins")
                           ? "$rootDir/app/libs"
                           : "$rootDir/app/src/main/assets/game"
-            file(destDir).mkdirs()
+            file(destDir).mkdirs()                                   // be sure it exists
 
             copy {
                 from zipTree(zipFile)
