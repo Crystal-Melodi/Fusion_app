@@ -19,17 +19,17 @@ android {
         }
     }
 
-    flavorDimensions "version"
-    productFlavors{
-        play {
-            dimension "version"
-            versionNameSuffix "-play"
-        }
-        patreon {
-            dimension "version"
-            versionNameSuffix "-patreon"
-        }
-    }
+//    flavorDimensions "version"
+//    productFlavors{
+//        play {
+//            dimension "version"
+//            versionNameSuffix "-play"
+//        }
+//        patreon {
+//            dimension "version"
+//            versionNameSuffix "-patreon"
+//        }
+//    }
 
     splits{
         abi {
