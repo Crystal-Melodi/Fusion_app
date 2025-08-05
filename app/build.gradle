@@ -71,16 +71,20 @@ tasks.register("fetchAssets") {
             ant.get(src: b.url, dest: zipFile, verbose: true)
 
             ant.checksum(file: zipFile, algorithm: "sha-256", property: "downloadHash")
-            def actualHash = ant.project.properties['downloadHash']   // 👈 NEW
-            if (actualHash != b.sha256) {                             // 👈 NEW
-                throw new GradleException("Checksum mismatch for ${b.name}!  expected=${b.sha256}  got=${actualHash}")
-            }                                                         // 👈 NEW
+            def actualHash = ant.project.properties['downloadHash']
+            if (actualHash != b.sha256) {
+                throw new GradleException("Checksum mismatch for ${b.name}! expected=${b.sha256} got=${actualHash}")
+            }
+
+            // NEW: pick destination safely
+            def destDir = (b.name == "plugins")
+                          ? "$rootDir/app/libs"
+                          : "$rootDir/app/src/main/assets/game"
+            file(destDir).mkdirs()
 
             copy {
                 from zipTree(zipFile)
-                into (b.name == "plugins")
-                       ? "$rootDir/app/libs"
-                       : "$rootDir/app/src/main/assets/game"
+                into destDir
             }
         }
     }
