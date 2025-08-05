@@ -10,35 +10,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Make Gradle wrapper executable
-      run: chmod +x gradlew
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
 
-    # 👉 Use Java 11 so Gradle 7.0.2 won’t choke
-    - uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '11'          # ← change made here
+      - name: Set up Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
 
-    - name: Cache Gradle
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-    - name: Fetch assets
-      run: ./gradlew fetchAssets
+      - name: Fetch assets
+        run: ./gradlew fetchAssets
 
-    - name: Build debug APK
-      run: ./gradlew assembleDebug
+      - name: Build all Debug APKs
+        run: ./gradlew assembleDebug
 
-     - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: InfiniteFusion-debug
-        path: app/build/outputs/apk/*/debug/*.apk
+      - name: Upload APK(s)
+        uses: actions/upload-artifact@v4
+        with:
+          name: InfiniteFusion-debug
+          path: app/build/outputs/apk/*/debug/*.apk
