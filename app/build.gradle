@@ -63,13 +63,20 @@ tasks.register("fetchAssets") {
         def manifest = new JsonSlurper().parse(file("$rootDir/asset-manifest.json"))
         manifest.bundles.each { b ->
             println "→ Downloading ${b.name} bundle…"
-            def zipFile = file("$buildDir/tmp/${b.name}.zip")
+
+            def tmpDir  = file("$buildDir/tmp")      // ➊ NEW
+            tmpDir.mkdirs()                          // ➋ NEW
+
+            def zipFile = new File(tmpDir, "${b.name}.zip")
             ant.get(src: b.url, dest: zipFile, verbose: true)
             ant.checksum(file: zipFile, algorithm: "sha-256", property: "hash")
             if (project.hash != b.sha256) throw new GradleException("Checksum mismatch for ${b.name}!")
+
             copy {
                 from zipTree(zipFile)
-                into (b.name == "plugins") ? "$rootDir/app/libs" : "$rootDir/app/src/main/assets/game"
+                into (b.name == "plugins")
+                     ? "$rootDir/app/libs"
+                     : "$rootDir/app/src/main/assets/game"
             }
         }
     }
