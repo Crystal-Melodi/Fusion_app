@@ -1,4 +1,4 @@
-name: Build APK
+name: Build Direct-Download APK
 
 on:
   push:
@@ -36,11 +36,11 @@ jobs:
       - name: Fetch assets
         run: ./gradlew fetchAssets
 
-      - name: Build all Debug APKs
-        run: ./gradlew assembleDebug
+      - name: Build Direct-Download APK only
+        run: ./gradlew assemblePatreonDebug
 
-      - name: Upload APK(s)
+      - name: Upload Direct-Download APK
         uses: actions/upload-artifact@v4
         with:
-          name: InfiniteFusion-debug
-          path: app/build/outputs/apk/*/debug/*.apk
+          name: InfiniteFusion-direct-download-debug
+          path: app/build/outputs/apk/patreon/debug/*.apk
